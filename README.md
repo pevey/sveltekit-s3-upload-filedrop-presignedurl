@@ -77,19 +77,28 @@ npm create svelte@latest my-app
 
 # install basic-ssl plugin for vite to provide self-signed cert for https dev environment
 npm install @vitejs/plugin-basic-ssl
+```
 
-# update vite.config.js
-#
-# add this line:
+Update vite.config.js
+
+Add this line:
+```bash
 import basicSsl from '@vitejs/plugin-basic-ssl';
-# edit this line:
+```
+
+Edit this line:
+```bash
 	plugins: [sveltekit()]
-# to this:
+```
+to this:
+```bash
 	plugins: [sveltekit(), basicSsl()]
+```
 
-# optional: 
-# add tailwindcss using this guide: https://tailwindcss.com/docs/guides/sveltekit
+Optional: 
+Add tailwindcss using this guide: https://tailwindcss.com/docs/guides/sveltekit
 
+```bash
 npm install aws-sdk
 npm install @aws-sdk/client-s3
 npm install @aws-sdk/s3-presigned-post
@@ -97,7 +106,6 @@ npm install @aws-sdk/s3-presigned-post
 npm install prisma --save-dev
 
 npm install filedrop-svelte
-
 ```
 
 ## Developing
