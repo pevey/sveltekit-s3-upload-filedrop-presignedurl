@@ -1,0 +1,109 @@
+<script>
+    import { enhance } from '$app/forms'
+    import { invalidateAll } from '$app/navigation'
+    import { filedrop } from 'filedrop-svelte'
+
+    let documents = []
+
+    let presignUrl = '/api/presign'
+    let objectApi = '/api/object'
+
+    let files
+    let loading
+    let filedropOptions = { disabled: loading, fileLimit: 50, maxSize: 52428800 }  // max size of 50 mb
+
+    async function upload(file) {
+        // Get presigned POST URL and form fields
+        let { url, fields } = await fetch(`${presignUrl}?fileType=${file.type}&fileName=${file.name}`)
+            .then((response) => response.json())
+
+        // Build a form for the request body
+        let form = new FormData()
+        Object.keys(fields).forEach(key => form.append(key, fields[key]))
+        form.append('file', file)
+        form.append('Content-Type', file.type)
+
+        // Send the POST request
+        let response = await fetch(url, { method: 'POST', body: form })
+            .then((response) => { 
+                if (response.ok) {                     
+                    // Save the document in the db using the api
+                    // form = new FormData()
+                    // form.append('claimNumber', claim.claim_number)
+                    // form.append('objectName', fields.key)
+                    // response = await fetch(api + '/' + encodeURIComponent(fields.key), { method: 'POST', body: form })
+                    // if (!response.ok) return false
+                    return fields.key 
+                } 
+            })
+            .catch((error) => console.log(error))
+    }
+
+    async function handleDrop(e) {
+        if (loading) return false
+        loading = true
+        files = e.detail.files.accepted
+        for (let file of files) {
+            await upload(file)
+            files = files.slice(1)
+        }
+        files = []
+        await invalidateAll()  
+        loading = false
+    }
+</script>
+
+ 
+<form action="?/presignPost" method="POST" enctype="multipart/form-data" class="flex flex-col items-center p-8">
+    <label for="file-input" class="text-blue-500">Select file to upload</label>
+    <input type="file" id="file-input" name="file" class="bg-white rounded-lg p-2 focus:outline-none focus:shadow-outline" />
+    <button type="submit" class="bg-green-500 rounded-lg p-2 text-white hover:bg-green-600 focus:outline-none focus:shadow-outline mt-4">Submit</button>
+</form>
+
+<form action="/claims?/addDocument" method="post" enctype="multipart/form-data" use:enhance={() => { return () => {} }}>
+    <!-- DROPZONE-->
+    <div use:filedrop={filedropOptions} on:filedrop={(e) => { handleDrop(e) }} class="mx-6 my-6 rounded-md bg-white border-2 border-dashed border-gray-600 px-20 pt-10 pb-10">
+        <div class="mt-1 flex justify-center ">
+            <div class="mt-1 flex justify-center ">
+                <div class="space-y-1 text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-600" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <div class="flex text-sm text-gray-600">
+                        <label for="file-upload" class="relative cursor-pointer rounded-md font-medium text-falconblue">
+                            <span>Upload a file</span>
+                        </label>
+                        <p class="pl-1">or drag and drop</p>
+                    </div>
+                    <p class="text-xs text-gray-500">MSG, PDF, DOC etc up to 50MB</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {#if files}
+    {#if files.length != 0}
+    <div class="px-4 py-5 mb-4">
+        <div class="font-medium">Pending Documents</div>
+        <ul class="divide-y divide-gray-300 rounded-md border border-gray-300">
+            {#each files as file, i}
+            <li class="flex items-center justify-between py-3 pl-3 pr-4">
+                <div class="flex w-0 flex-1 items-center">
+                    <!-- Heroicon name: mini/paper-clip -->
+                    <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M15.621 4.379a3 3 0 00-4.242 0l-7 7a3 3 0 004.241 4.243h.001l.497-.5a.75.75 0 011.064 1.057l-.498.501-.002.002a4.5 4.5 0 01-6.364-6.364l7-7a4.5 4.5 0 016.368 6.36l-3.455 3.553A2.625 2.625 0 119.52 9.52l3.45-3.451a.75.75 0 111.061 1.06l-3.45 3.451a1.125 1.125 0 001.587 1.595l3.454-3.553a3 3 0 000-4.242z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="ml-2 w-0 flex-1 truncate">{file.name}</span>
+                </div>
+                <div role="status">
+                    <svg aria-hidden="true" class="mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-300 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                    </svg>
+                </div>
+            </li>
+            {/each}
+        </ul>
+    </div>
+    {/if}
+    {/if}
+</form>
