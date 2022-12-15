@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk'
 import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3'
-//import db from '$lib/db'
+import db from '$lib/db'
 import { error } from '@sveltejs/kit'
 
 import { S3_BUCKET } from '$env/static/private'
@@ -15,26 +15,29 @@ export async function GET ({ params, locals }) {
 
 export async function DELETE ({ params, locals }) {
     //if (!locals.authorized) { throw error(401, 'unauthorized') }
-    // TODO: if more than 24 hours old, throw 403 forbidden
     const key = params.id
     const s3 = new S3Client()
     let obj = await s3.send(new DeleteObjectCommand({ Bucket: S3_BUCKET, Key: key }))
     return new Response(obj)
 }
 
-export async function POST({ request, params, locals }) {
-    //if (!locals.authorized) { throw error(401, 'unauthorized') }
+export async function POST({ request, locals }) {
     // called after user has done presigned post.  add to db
+    //if (!locals.authorized) { throw error(401, 'unauthorized') }
     const data = await request.formData()
-    if (!data.get('claimNumber') || !(data.get('objectName'))) { throw error(500, 'bad format') }
+    if (!data.get('fileName') || !data.get('fileType') || !data.get('fileSize') || !data.get('objectId')) { throw error(500, 'bad format') }
     let document
-    // try {
-    //     document = await db.documents.create({
-    //         data: {
-    //             claim_number: data.get('claimNumber'),
-    //             object_name: data.get('objectName')
-    //         }
-    //     })
-    // } catch {  }
+    document = await db.object.create({
+        data: {
+            id: data.get('objectId'),
+            file_name: data.get('fileName'),
+            file_size: parseInt(data.get('fileSize')),
+            file_type: data.get('fileType'),
+        }
+    })
+    try {
+    } catch(error) {
+        console.log(error)
+    }
     if (document.id) { return new Response(document.id, { status: 200 }) }  
 }
