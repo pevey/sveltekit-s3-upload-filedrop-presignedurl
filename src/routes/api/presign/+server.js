@@ -6,7 +6,10 @@ import { S3_BUCKET } from '$env/static/private'
 export async function GET ({ url, locals }) {
     //if (!locals.authorized) { throw error(401, 'unauthorized') }
 
-    const id = url.searchParams.get('id')
+    const id = generateObjectId()
+
+    // this file type assignment is not secure, but it's just an example
+    // you should screen this against a list of allowed file types since it is coming from the user's browser
     const fileType = url.searchParams.get('fileType')
 
     const data = await createPresignedPost(new S3Client(), {
@@ -18,5 +21,9 @@ export async function GET ({ url, locals }) {
     })
 
     return new Response(JSON.stringify(data), { status: 200 })
+}
+
+function generateObjectId() {
+    return String(Date.now() + crypto.randomUUID())
 }
 

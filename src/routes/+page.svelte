@@ -13,16 +13,10 @@
     let loading
     let filedropOptions = { disabled: loading, fileLimit: 50, maxSize: 52428800 }  // max size of 50 mb
 
-    function generateObjectId() {
-        return String(Date.now() + crypto.randomUUID())
-    }
-
     async function upload(file) {
-        // Generate a unique key for the object
-        let id = generateObjectId()
 
         // Get presigned POST URL and form fields
-        let { url, fields } = await fetch(`${presignUrl}?id=${id}&fileType=${file.type}`)
+        let { url, fields } = await fetch(`${presignUrl}?fileType=${file.type}`)
             .then((response) => response.json())
             .catch((error) => {
                 console.log(error)
@@ -94,7 +88,7 @@
 </div>
 
 <!-- IN-PROGRESS FILE LIST -->
-{#if files}
+
 {#if files.length != 0}
 <div class="px-4 py-5 mb-4">
     <div class="font-medium">Pending Documents</div>
@@ -119,11 +113,10 @@
     </ul>
 </div>
 {/if}
-{/if}
 
 <!-- UPLOADED FILE LIST -->
 <div class="px-4 py-5 mb-4 sm:col-span-2" data-sveltekit-preload-data="off">
-    {#if objects}
+    {#if objects.length != 0}
     <div class="font-medium">Saved Documents</div>
     <ul class="divide-y divide-gray-300 rounded-md border border-gray-300">
         {#each objects as object, i}
