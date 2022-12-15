@@ -6,7 +6,7 @@ export async function load() {
     for (let object of objects) {
         object.created = shortDate(object.created)
     }
-console.log(objects)
+
     return { objects }
 }
 
