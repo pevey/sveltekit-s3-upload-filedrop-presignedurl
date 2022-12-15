@@ -88,7 +88,6 @@
 </div>
 
 <!-- IN-PROGRESS FILE LIST -->
-
 {#if files.length != 0}
 <div class="px-4 py-5 mb-4">
     <div class="font-medium">Pending Documents</div>
