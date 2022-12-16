@@ -27,16 +27,16 @@ export async function POST({ request, locals }) {
     const data = await request.formData()
     if (!data.get('fileName') || !data.get('fileType') || !data.get('fileSize') || !data.get('objectId')) { throw error(500, 'bad format') }
     let document
-    document = await db.object.create({
-        data: {
-            id: data.get('objectId'),
-            file_name: data.get('fileName'),
-            file_size: parseInt(data.get('fileSize')),
-            file_type: data.get('fileType'),
-        }
-    })
     try {
-    } catch(error) {
+        document = await db.object.create({
+            data: {
+                id: data.get('objectId'),
+                file_name: data.get('fileName'),
+                file_size: parseInt(data.get('fileSize')),
+                file_type: data.get('fileType'),
+            }
+        })
+    } catch (error) {
         console.log(error)
     }
     if (document.id) { return new Response(document.id, { status: 200 }) }  
