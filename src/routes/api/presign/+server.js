@@ -24,6 +24,6 @@ export async function GET ({ url, locals }) {
 }
 
 function generateObjectId() {
-    return String(Date.now() + crypto.randomUUID())
+    return String(Date.now() + crypto.randomUUID()).replace(/-/g, '')
 }
 
