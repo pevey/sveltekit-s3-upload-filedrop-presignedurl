@@ -3,13 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model object {
   id        String    @id @unique(map: "id") @default("1") @db.VarChar(50)
-  created   DateTime? @default(now()) @db.DateTime(0)
+  created   DateTime? @default(now())
   file_name String?   @db.VarChar(255)
   file_size Int?
   file_type String?   @db.VarChar(50)
